@@ -17,7 +17,6 @@ ACCESS_TOKEN_EXPIRES_MINUTES = 800
 test_user = {
    "username": "bat",
     "password": "bat1",
-     
 }
 
 app = FastAPI()
