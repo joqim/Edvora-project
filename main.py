@@ -26,6 +26,7 @@ app = FastAPI()
 origins = {
     "http://localhost",
     "http://localhost:3000",
+    "https://edvora-project.herokuapp.com"
 }
 
 app.add_middleware(
