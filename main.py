@@ -49,7 +49,7 @@ app.mount("/my-app/public", StaticFiles(directory="./my-app/public"), name="publ
 
 @app.get("/")
 async def read_index():
-    return FileResponse('public/index.html')
+    return FileResponse('./my-app/public/index.html')
 
 # # connect to MongoDB, change the << MONGODB URL >> to reflect your own connection string
 # client = MongoClient("mongodb+srv://cs631:edvora1998@cluster0.sug2z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
