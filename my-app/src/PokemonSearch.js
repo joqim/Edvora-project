@@ -10,7 +10,7 @@ export default function PokemonSearch(){
       return
     }else{
        // make api call to our backend. we'll leave thisfor later
-        axios.post('http://localhost:8000/save_pokemon',{
+        axios.post('/save_pokemon',{
           pokemon_name: pokemonName
         })
         .then(function(response){
