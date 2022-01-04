@@ -5,11 +5,10 @@ import jwt
 from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import requests
 
 from pymongo import MongoClient
-# pprint library is used to make the output look more pretty
-from pprint import pprint
 
 SECERT_KEY = "my_secret_key"
 ALGORITHM ="HS256"
@@ -37,6 +36,7 @@ app.add_middleware(
     allow_headers= ["*"],
 )
 
+app.mount("/my-app/build", StaticFiles(directory="./my-app/build"), name="build")
 
 # connect to MongoDB, change the << MONGODB URL >> to reflect your own connection string
 client = MongoClient("mongodb+srv://cs631:edvora1998@cluster0.sug2z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
