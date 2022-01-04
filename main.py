@@ -15,7 +15,7 @@ ALGORITHM ="HS256"
 ACCESS_TOKEN_EXPIRES_MINUTES = 800
 
 test_user = {
-   "username": "bat",
+    "username": "bat",
     "password": "bat1",
 }
 
@@ -35,7 +35,7 @@ app.add_middleware(
     allow_headers= ["*"],
 )
 
-app.mount("/my-app/build", StaticFiles(directory="./my-app/build"), name="build")
+app.mount("/my-app/build/static", StaticFiles(directory="./my-app/build/static"), name="build")
 
 # connect to MongoDB, change the << MONGODB URL >> to reflect your own connection string
 client = MongoClient("mongodb+srv://cs631:edvora1998@cluster0.sug2z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
