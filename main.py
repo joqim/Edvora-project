@@ -38,6 +38,7 @@ app.add_middleware(
     allow_headers= ["*"],
 )
 
+
 @app.route('/api', methods=['GET'])
 def index():
     return {
