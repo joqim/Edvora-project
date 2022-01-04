@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import requests
 
 from pymongo import MongoClient
@@ -35,7 +36,12 @@ app.add_middleware(
     allow_headers= ["*"],
 )
 
-app.mount("/my-app/build/static", StaticFiles(directory="./my-app/build/static"), name="build")
+
+app = FastAPI()
+app.mount('/', StaticFiles(directory="./my-app/build/static", html=True), name="static")
+# app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
 
 # connect to MongoDB, change the << MONGODB URL >> to reflect your own connection string
 client = MongoClient("mongodb+srv://cs631:edvora1998@cluster0.sug2z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
