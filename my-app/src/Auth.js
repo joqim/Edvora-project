@@ -2,9 +2,10 @@ import { useLocation,Navigate } from "react-router-dom"
 
 
 
-export const setToken = (loggedInEmail, token)=>{
+export const setToken = (loggedInEmail, token, username)=>{
     localStorage.setItem('email', loggedInEmail)
     localStorage.setItem('token', token)
+    localStorage.setItem('username', username)
 }
 
 export const fetchToken = (token)=>{

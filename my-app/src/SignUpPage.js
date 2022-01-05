@@ -25,11 +25,12 @@ class SignUpPage extends Component {
   }
 
   handleSignUp = () => {
-    if(this.state.email && (this.state.password === this.state.reenteredPassword)) {
+    if(this.state.email && this.state.username && (this.state.password === this.state.reenteredPassword)) {
       console.log('sending values to backend signup')
       axios.post('/sign_up',{
         email: this.state.email,
-        password: this.state.password
+        password: this.state.password,
+        username: this.state.username
       })
       .then(response => {
         console.log(response, 'response')
@@ -41,7 +42,7 @@ class SignUpPage extends Component {
           }, () => {
             setTimeout(function() {
               document.location.href = "/"
-            }, 1500)
+            }, 500)
           })
         }
       })
@@ -65,9 +66,19 @@ class SignUpPage extends Component {
           <Form size='large' error={this.state.error}>
             <Segment stacked>
               <Form.Input
+                name="username"
+                fluid
+                icon='user' 
+                iconPosition='left'
+                placeholder='Username'
+                onChange={this.handleChange}
+                required
+                error={this.state.error}
+              />
+              <Form.Input
                 name="email"
                 fluid 
-                icon='user' 
+                icon='mail' 
                 iconPosition='left' 
                 placeholder='E-mail address'
                 onChange={this.handleChange}

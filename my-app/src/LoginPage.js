@@ -34,8 +34,8 @@ class LoginPage extends Component {
       })
       .then(response => {
         console.log(response, 'response')
-        if(response.status === 200 && response.data.token){
-          setToken(this.state.email, response.data.token)
+        if(response.status === 200 && response.data.token && response.data.user){
+          setToken(this.state.email, response.data.token, response.data.user)
           this.setState({
             ...this.state,
             error: false,

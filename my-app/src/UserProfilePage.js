@@ -7,19 +7,25 @@ class UserProfilePage extends Component {
     super(props);
     this.state = {
       loggedInEmail: "",
+      loggedInUsername: "",
       fetched_pokemon_name: "",
       pokemon_name: "",
       pokemon_height: "",
       pokemon_weight: "",
-      error: false
+      error: false,
+      message: "",
+      pokemon_abilities: [],
+      pokemon_moves: []
     }
   }
 
   componentDidMount = () => {
     let loggedInEmail = localStorage.getItem('email')
+    let loggedInUsername = localStorage.getItem('username')
     this.setState({
       ...this.state,
-      loggedInEmail
+      loggedInEmail,
+      loggedInUsername
     }, () => {
       this.retrieveFavouritePokemon();
     })
@@ -35,8 +41,10 @@ class UserProfilePage extends Component {
         this.setState({
           ...this.state,
           fetched_pokemon_name: response.data.message.pokemon_name,
-          pokemon_weight: response.data.message.pokemon_weight,
-          pokemon_height: response.data.message.pokemon_height,
+          pokemon_weight: response.data.message.pokemon_weight/10,
+          pokemon_height: response.data.message.pokemon_height/10,
+          pokemon_abilities: response.data.message.pokemon_abilities,
+          pokemon_moves: response.data.message.pokemon_moves
         })
       }
     })
@@ -59,16 +67,21 @@ class UserProfilePage extends Component {
       })
       .then(response => {
         console.log('response', response)
-        if(response.status === 200 && response.data.message) {
+        if(response.status === 200 && response.data.message.name) {
           this.setState({
             ...this.state,
             message: "Favourite pokemon updated",
-            pokemon_weight: response.data.message.weight/10,
-            pokemon_height: response.data.message.height/10
+            // pokemon_weight: response.data.message.weight/10,
+            // pokemon_height: response.data.message.height/10
           }, () => {
             this.retrieveFavouritePokemon();
           })
-        }        
+        } else if(response.status === 200 && !response.data.message.name) {
+          this.setState({
+            ...this.state,
+            message: response.data.message
+          })
+        }   
       })
       .catch(function(error){
         console.log(error,'error');
@@ -85,26 +98,40 @@ class UserProfilePage extends Component {
   handleSignOut = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('email')
+    localStorage.removeItem('username')
     document.location.href = "/"
   }
 
   render() {
+    console.log('state in user profile', this.state)
     return (
       <>
         <div style={{ position: "absolute", top: 50, right: 30}}>
-          {this.state.loggedInEmail} &nbsp;
+          Welcome <b>{this.state.loggedInUsername}</b> &nbsp;&nbsp;&nbsp;
           <Button onClick={this.handleSignOut}>Sign Out</Button>
         </div>
-        <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
+        <Grid textAlign='center' style={{ height: '100vh', marginTop: '5%' }} verticalAlign='middle'>
           <Grid.Column style={{ maxWidth: 450 }}>
             <Header as='h2' textAlign='center'>
               User Profile
             </Header>
             {this.state.fetched_pokemon_name && 
               (<p style={{ textAlign: 'left', marginTop: '5%', marginLeft: '2%'}}>
-                Your favourite pokemon is <b> {this.state.fetched_pokemon_name}</b>,<br/>
+                Your favourite pokemon is 
+                <b> {this.state.fetched_pokemon_name.charAt(0).toUpperCase() + this.state.fetched_pokemon_name.slice(1)}
+                </b>,<br/>
                 weight of <b> {this.state.pokemon_weight} kg</b>, <br/>
-                height of <b> {this.state.pokemon_height} m</b>
+                height of <b> {this.state.pokemon_height} m</b>, <br/>
+                {this.state.pokemon_abilities && this.state.pokemon_abilities.length>0 && (
+                  <>
+                    with abilities <b>{this.state.pokemon_abilities.join(", ")}</b>, <br />
+                  </>
+                )}
+                {this.state.pokemon_moves && this.state.pokemon_moves.length>0 && (
+                  <>
+                    with moves <b>{this.state.pokemon_moves.join(", ")}</b>, <br />
+                  </>
+                )}
               </p>)}
             
             <Form size='large'>
