@@ -9,15 +9,13 @@ from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 import requests
+from passlib.context import CryptContext
+
+import json
 
 SECERT_KEY = "my_secret_key"
 ALGORITHM ="HS256"
 ACCESS_TOKEN_EXPIRES_MINUTES = 800
-
-test_user = {
-    "username": "bat",
-    "password": "bat1",
-}
 
 origins = {
     "http://localhost",
@@ -57,55 +55,111 @@ def read_index(request: Request):
     index = 'my-app/build/index.html' 
     return FileResponse(index)
 
-# connect to MongoDB, change the << MONGODB URL >> to reflect your own connection string
+#put in env, mongoURI string
 client = MongoClient("mongodb+srv://cs631:edvora1998@cluster0.sug2z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
-db=client.edvora
-user = {
-        'name' : 'joqim',
-        'favourite_pokemon' : 'bulbasaur'
+db = client.edvora
+# user = {
+#         'name' : 'joqim',
+#         'favourite_pokemon' : 'bulbasaur'
+#     }
+# result=db.users.insert_one(user)
+# print("inserted user into database", result)
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def store_user(email, hash_value):
+    user = {
+        'email': email,
+        'password_hash': hash_value
     }
-result=db.users.insert_one(user)
+    #change to findone and update
+    return db.users.insert_one(user)
+
+def retrieve_user(email):
+    user = {
+        'email': email
+    }
+    # return db.users.find_one(user, {'password_hash': 1})
+    return db.users.find_one(user)
+
+def update_user(email, pokemon_name):
+    user = {
+        'email': email
+    }
+    return db.users.find_one_and_update(user, {'$set': {'pokemon_name': pokemon_name}})
+
+class SignUpItem(BaseModel):
+    email: str
+    password: str
+
+@app.post("/sign_up")
+async def user_sign_up(signupitem:SignUpItem):
+    data = jsonable_encoder(signupitem)
+    if data['email'] and data['password']:
+        print ("Hashing the password")
+        #store the hashed value of password in user document
+        hashed_value = get_password_hash(data['password'])
+        print("hashed value", hashed_value)
+
+        user = store_user(data['email'], hashed_value)
+        print("user inserted", user)
+
+        return {'message': 'user inserted'}        
+    else:
+        return {'message':'login failed'}
 
 class LoginItem(BaseModel):
-    username: str
+    email: str
     password: str
-    
-    @app.get("/")
-    def read_root():
-     return {"Hello": "World"}
 
 @app.post("/login")
 async def user_login(loginitem:LoginItem):
     data = jsonable_encoder(loginitem)
-    if data['username']== test_user['username'] and data['password']== test_user['password']:
-        print ("The login values match")
+    if data['email'] and data['password']:
+        user = retrieve_user(data['email'])
+        print ("previously_hashed_value", user.get('password_hash'))
+
+        print("checking if hash verification works")
+        verified = verify_password(data['password'], user.get('password_hash'))
+        print("is it verified", verified)
+
         encoded_jwt = jwt.encode(data, SECERT_KEY, algorithm=ALGORITHM)
         return {'token': encoded_jwt}        
     else:
         return {'message':'login failed'}
 
 
-
 class PokeItem(BaseModel):
+    email: str
     pokemon_name: str
 
-    @app.get("/")
-    def read_root():
-     return {"Hello": "World"}
+    @app.get("/pokemon")
+    async def get_pokemon(emailId: str):
+        print("email id from parameter", emailId)
+        user = retrieve_user(emailId)
+        print("user fetched", user)
+        return {"message": "World"}
 
 @app.post("/save_pokemon")
-async def user_login(pokemon:PokeItem):
+async def save_pokemon(pokemon:PokeItem):
     data = jsonable_encoder(pokemon)
     print (data['pokemon_name'])
-    if data['pokemon_name']:
+    if data['email'] and data['pokemon_name']:
         print ("Pokemon name is given", data['pokemon_name'])
 
         #convert input name to lowercase
-        pokemon_name = data['pokemon_name']
-        base_url = 'https://pokeapi.co/api/v2/pokemon'
-        pokemon_response = requests.get(f'{base_url}/{pokemon_name}')
-        # pokemon_response = requests.get(f'{base_url}/clefairy')
-        print(pokemon_response)
+        pokemon_name = data['pokemon_name'].lower()
+        user = update_user(data['email'], pokemon_name)
+        print("updated user document", user)
+        # base_url = 'https://pokeapi.co/api/v2/pokemon'
+        # pokemon_response = requests.get(f'{base_url}/{pokemon_name}')
+        # # pokemon_response = requests.get(f'{base_url}/clefairy')
+        # print(pokemon_response)
         return {'token': "pokemon saved in Database"}        
     else:
         return {'message':'login failed'}

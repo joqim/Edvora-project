@@ -1,21 +1,24 @@
 import logo from './logo.svg';
 import './App.css';
 import {Routes, Route} from 'react-router-dom';
-import Login from './Login';
-import Profile from './Profile';
+import LoginPage from './LoginPage';
+import UserProfilePage from './UserProfilePage';
+import SignUpPage from './SignUpPage';
 import { RequireToken} from './Auth'
 function App() {
   return (
-    <div className ="App">
+    <div className = "App">
     <Routes>
       <Route path="/" 
-      element = {<Login/>}/>
-      <Route path="/profile"
-       element = {
-       <RequireToken>
-         <Profile/>
-       </RequireToken>
-      }
+      element = {<LoginPage/>}/>
+      <Route path="/sign_up" 
+      element = {<SignUpPage/>}/>
+      <Route path="/user_profile"
+        element = {
+        <RequireToken>
+          <UserProfilePage />
+        </RequireToken>
+        }
       />
     </Routes>
     </div>
