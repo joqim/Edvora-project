@@ -10,10 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 from passlib.context import CryptContext
-
-# Use this to serve a public/index.html
-from starlette.responses import FileResponse 
-from starlette.responses import RedirectResponse  # add this
+import json
 
 SECERT_KEY = "my_secret_key"
 ALGORITHM ="HS256"
@@ -35,35 +32,30 @@ app.add_middleware(
     allow_headers= ["*"],
 )
 
+
+
 folder = 'my-app/build/'
 
-# app.mount("/static/", StaticFiles(directory="my-app/build/static"), name="static")
+app.mount("/static/", StaticFiles(directory="my-app/build/static"), name="static")
 
-app.mount("/public", StaticFiles(directory="my-app/public"), name="public")
+@app.get("/", response_class=FileResponse)
+def read_index(request: Request):
+    path = 'my-app/build/index.html'
+    return FileResponse(path)
 
-@app.get("/")
-async def read_index():
-    # return FileResponse('public/index.html')  # remove this
-    return RedirectResponse(url="/public/index.html")  # change to this
+@app.get("/{catchall:path}", response_class=FileResponse)
+def read_index(request: Request):
+    # check first if requested file exists
+    path = request.path_params["catchall"]
+    file = folder+path
 
-# @app.get("/", response_class=FileResponse)
-# def read_index(request: Request):
-#     path = 'my-app/build/index.html'
-#     return FileResponse(path)
+    print('look for: ', path, file)
+    if os.path.exists(file):
+        return FileResponse(file)
 
-# @app.get("/{catchall:path}", response_class=FileResponse)
-# def read_index(request: Request):
-#     # check first if requested file exists
-#     path = request.path_params["catchall"]
-#     file = folder+path
-
-#     print('look for: ', path, file)
-#     if os.path.exists(file):
-#         return FileResponse(file)
-
-#     # otherwise return index files
-#     index = 'my-app/build/index.html' 
-#     return FileResponse(index)
+    # otherwise return index files
+    index = 'my-app/build/index.html' 
+    return FileResponse(index)
 
 #put in env, mongoURI string
 client = MongoClient("mongodb+srv://cs631:edvora1998@cluster0.sug2z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
@@ -82,7 +74,7 @@ def store_user(email, hash_value):
         'password_hash': hash_value
     }
     #change to findone and update
-    return db.users.insert_one(user)
+    return db.users.find_one_and_update({'email': email}, {'$set': user}, upsert=True)
 
 def retrieve_user(email):
     user = {
@@ -132,8 +124,11 @@ async def user_login(loginitem:LoginItem):
         verified = verify_password(data['password'], user.get('password_hash'))
         print("is it verified", verified)
 
-        encoded_jwt = jwt.encode(data, SECERT_KEY, algorithm=ALGORITHM)
-        return {'token': encoded_jwt}        
+        if(verified):
+            encoded_jwt = jwt.encode(data, SECERT_KEY, algorithm=ALGORITHM)
+            return {'token': encoded_jwt}
+        else:
+            return {'message': 'login failed'}        
     else:
         return {'message':'login failed'}
 
@@ -141,13 +136,6 @@ async def user_login(loginitem:LoginItem):
 class PokeItem(BaseModel):
     email: str
     pokemon_name: str
-
-    @app.get("/pokemon")
-    async def get_pokemon(emailId: str):
-        print("email id from parameter", emailId)
-        user = retrieve_user(emailId)
-        print("user fetched", user)
-        return {"message": "World"}
 
 @app.post("/save_pokemon")
 async def save_pokemon(pokemon:PokeItem):
@@ -167,3 +155,17 @@ async def save_pokemon(pokemon:PokeItem):
         return {'token': "pokemon saved in Database"}        
     else:
         return {'message':'login failed'}
+
+
+class PokeItem(BaseModel):
+    email: str
+
+@app.post("/get_pokemon")
+async def get_pokemon(pokemon:PokeItem):
+    print("inside get pokemon")
+    data = jsonable_encoder(pokemon)
+    email = data['email']
+    print("email id from parameter", email)
+    user = retrieve_user(email)
+    print("user fetched", user)
+    return {"message": user.get('pokemon_name')}

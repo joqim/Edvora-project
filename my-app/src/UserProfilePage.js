@@ -7,7 +7,7 @@ class UserProfilePage extends Component {
     super(props);
     this.state = {
       loggedInEmail: "",
-      fetched_pokemon_name: "Laura",
+      fetched_pokemon_name: "",
       pokemon_name: "",
       error: false
     }
@@ -19,10 +19,22 @@ class UserProfilePage extends Component {
       ...this.state,
       loggedInEmail
     }, () => {
-      axios.get(`/pokemon?emailId=${loggedInEmail}`)
-      .then(response => {
-        console.log('response from componentdidmount', response)
-      })
+      this.retrieveFavouritePokemon();
+    })
+  }
+
+  retrieveFavouritePokemon = () => {
+    axios.post('/get_pokemon', {
+      email: this.state.loggedInEmail
+    })
+    .then(response => {
+      console.log('response from componentdidmount', response)
+      if(response.status === 200 && response.data.message) {
+        this.setState({
+          ...this.state,
+          fetched_pokemon_name: response.data.message
+        })
+      }
     })
   }
 
@@ -47,6 +59,8 @@ class UserProfilePage extends Component {
           this.setState({
             ...this.state,
             message: "Favourite pokemon updated"
+          }, () => {
+            this.retrieveFavouritePokemon();
           })
         }        
       })

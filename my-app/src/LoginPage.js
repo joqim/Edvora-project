@@ -45,7 +45,19 @@ class LoginPage extends Component {
               document.location.href = "/user_profile"
             }, 500)
           })
+        } else {
+          this.setState({
+            ...this.state,
+            error: true,
+            message: "Credentials invalid"
+          })
         }
+      }).catch(err => {
+        this.setState({
+          ...this.state,
+          error: true,
+          message: "Credentials invalid"
+        })
       })
     } else {
       this.setState({
