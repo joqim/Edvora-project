@@ -10,7 +10,10 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 from passlib.context import CryptContext
-import json
+
+# Use this to serve a public/index.html
+from starlette.responses import FileResponse 
+from starlette.responses import RedirectResponse  # add this
 
 SECERT_KEY = "my_secret_key"
 ALGORITHM ="HS256"
@@ -34,7 +37,14 @@ app.add_middleware(
 
 folder = 'my-app/build/'
 
-app.mount("/static/", StaticFiles(directory="my-app/build/static"), name="static")
+# app.mount("/static/", StaticFiles(directory="my-app/build/static"), name="static")
+
+app.mount("/public", StaticFiles(directory="my-app/public"), name="public")
+
+@app.get("/")
+async def read_index():
+    # return FileResponse('public/index.html')  # remove this
+    return RedirectResponse(url="/public/index.html")  # change to this
 
 # @app.get("/", response_class=FileResponse)
 # def read_index(request: Request):
