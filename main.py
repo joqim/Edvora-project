@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 import os
+from dotenv import load_dotenv
 
 from fastapi.responses import RedirectResponse, FileResponse, HTMLResponse
 from pymongo import MongoClient
@@ -10,17 +11,17 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 from passlib.context import CryptContext
-import json
+
+#loading env variables
+load_dotenv()
 
 SECERT_KEY = "my_secret_key"
 ALGORITHM ="HS256"
 ACCESS_TOKEN_EXPIRES_MINUTES = 800
 
+HOST_URL = os.getenv('HOST_URL')
 origins = {
-    "http://localhost",
-    "http://localhost:3000",
-    "https://edvora-project.herokuapp.com",
-    "https://edvora-project.herokuapp.com/"
+    HOST_URL
 }
 
 app = FastAPI()
@@ -31,8 +32,6 @@ app.add_middleware(
     allow_methods = ["*"],
     allow_headers= ["*"],
 )
-
-
 
 folder = 'my-app/build/'
 
@@ -57,8 +56,10 @@ def read_index(request: Request):
     index = 'my-app/build/index.html' 
     return FileResponse(index)
 
-#put in env, mongoURI string
-client = MongoClient("mongodb+srv://cs631:edvora1998@cluster0.sug2z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+
+
+MONGO_URI_STRING = os.getenv('MONGO_URI')
+client = MongoClient(MONGO_URI_STRING)
 db = client.edvora
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -83,11 +84,33 @@ def retrieve_user(email):
     # return db.users.find_one(user, {'password_hash': 1})
     return db.users.find_one(user)
 
-def update_user(email, pokemon_name):
+def update_user(email, pokemon_name, pokemon_weight, pokemon_height):
     user = {
         'email': email
     }
-    return db.users.find_one_and_update(user, {'$set': {'pokemon_name': pokemon_name}})
+    return db.users.find_one_and_update(user, {'$set': 
+        {
+            'pokemon_name': pokemon_name,
+            'pokemon_weight': pokemon_weight,
+            'pokemon_height': pokemon_height
+        }
+    })
+
+async def retrieve_pokemon_data(name):
+    print("inside retrieve_pokemon_data")
+    base_url = 'https://pokeapi.co/api/v2/pokemon'
+    pokemon_response = requests.get(f'{base_url}/{name}')
+    parsed_response = pokemon_response.json()
+    print("pokemon API response", parsed_response['name'])
+
+    #prepare arrays of types, species, moves and add to this object
+    pokemon_object = {
+        'name' :  parsed_response['name'],
+        'weight': parsed_response['weight'],
+        'height': parsed_response['height']
+    }
+    return pokemon_object
+    # # pokemon_response = requests.get(f'{base_url}/clefairy')
 
 class SignUpItem(BaseModel):
     email: str
@@ -107,7 +130,7 @@ async def user_sign_up(signupitem:SignUpItem):
 
         return {'message': 'user inserted'}        
     else:
-        return {'message':'login failed'}
+        return {'message':'signup failed'}
 
 class LoginItem(BaseModel):
     email: str
@@ -146,15 +169,16 @@ async def save_pokemon(pokemon:PokeItem):
 
         #convert input name to lowercase
         pokemon_name = data['pokemon_name'].lower()
-        user = update_user(data['email'], pokemon_name)
+        pokemon_object = await retrieve_pokemon_data(pokemon_name)
+
+        #updating user's favorite pokemon
+        user = update_user(data['email'], pokemon_name, pokemon_object['weight'], pokemon_object['height'])
         print("updated user document", user)
-        # base_url = 'https://pokeapi.co/api/v2/pokemon'
-        # pokemon_response = requests.get(f'{base_url}/{pokemon_name}')
-        # # pokemon_response = requests.get(f'{base_url}/clefairy')
+        
         # print(pokemon_response)
-        return {'token': "pokemon saved in Database"}        
+        return {'message': pokemon_object}        
     else:
-        return {'message':'login failed'}
+        return {'message':'user update failed'}
 
 
 class PokeItem(BaseModel):
@@ -167,5 +191,10 @@ async def get_pokemon(pokemon:PokeItem):
     email = data['email']
     print("email id from parameter", email)
     user = retrieve_user(email)
-    print("user fetched", user)
-    return {"message": user.get('pokemon_name')}
+    print("user fetched", user.get('pokemon_weight'))
+    prepared_response = {
+        'pokemon_name': user.get('pokemon_name'),
+        'pokemon_weight': user.get('pokemon_weight'),
+        'pokemon_height': user.get('pokemon_height')
+    }
+    return {"message": prepared_response}

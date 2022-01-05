@@ -9,6 +9,8 @@ class UserProfilePage extends Component {
       loggedInEmail: "",
       fetched_pokemon_name: "",
       pokemon_name: "",
+      pokemon_height: "",
+      pokemon_weight: "",
       error: false
     }
   }
@@ -28,11 +30,13 @@ class UserProfilePage extends Component {
       email: this.state.loggedInEmail
     })
     .then(response => {
-      console.log('response from componentdidmount', response)
+      console.log('response from retrieve DB call', response)
       if(response.status === 200 && response.data.message) {
         this.setState({
           ...this.state,
-          fetched_pokemon_name: response.data.message
+          fetched_pokemon_name: response.data.message.pokemon_name,
+          pokemon_weight: response.data.message.pokemon_weight,
+          pokemon_height: response.data.message.pokemon_height,
         })
       }
     })
@@ -55,10 +59,12 @@ class UserProfilePage extends Component {
       })
       .then(response => {
         console.log('response', response)
-        if(response.status === 200) {
+        if(response.status === 200 && response.data.message) {
           this.setState({
             ...this.state,
-            message: "Favourite pokemon updated"
+            message: "Favourite pokemon updated",
+            pokemon_weight: response.data.message.weight/10,
+            pokemon_height: response.data.message.height/10
           }, () => {
             this.retrieveFavouritePokemon();
           })
@@ -95,8 +101,10 @@ class UserProfilePage extends Component {
               User Profile
             </Header>
             {this.state.fetched_pokemon_name && 
-              (<p style={{ textAlign: 'left', marginTop: '5%'}}>Your favourite pokemon is 
-                <b> {this.state.fetched_pokemon_name}</b>
+              (<p style={{ textAlign: 'left', marginTop: '5%', marginLeft: '2%'}}>
+                Your favourite pokemon is <b> {this.state.fetched_pokemon_name}</b>,<br/>
+                weight of <b> {this.state.pokemon_weight} kg</b>, <br/>
+                height of <b> {this.state.pokemon_height} m</b>
               </p>)}
             
             <Form size='large'>
