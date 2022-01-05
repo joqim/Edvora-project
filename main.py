@@ -10,7 +10,6 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 from passlib.context import CryptContext
-
 import json
 
 SECERT_KEY = "my_secret_key"
