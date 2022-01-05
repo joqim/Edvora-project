@@ -115,14 +115,14 @@ async def prepare_moves_array(moves):
 
 async def retrieve_pokemon_data(name):
     print("inside retrieve_pokemon_data")
-    base_url = 'https://pokeapi.co/api/v2/pokemon'
-    pokemon_response = requests.get(f'{base_url}/{name}')
+    POKE_BASE_URL = os.getenv('POKE_BASE_URL')
+    pokemon_response = requests.get(f'{POKE_BASE_URL}/{name}')
     if(pokemon_response):
         parsed_response = pokemon_response.json()
-        print("pokemon API response", parsed_response['name'])
+        #print("pokemon API response", parsed_response['name'])
 
         abilities_array = await prepare_abilities_array(parsed_response['abilities'])
-        print("abilities_array", abilities_array)
+        #print("abilities_array", abilities_array)
 
         moves_array = await prepare_moves_array(parsed_response['moves'])
 
@@ -198,7 +198,7 @@ async def save_pokemon(pokemon:PokeItem):
         #convert input name to lowercase
         pokemon_name = data['pokemon_name'].lower()
         pokemon_object = await retrieve_pokemon_data(pokemon_name)
-        print("pokemon_object in backend save", pokemon_object)
+        #print("pokemon_object in backend save", pokemon_object)
 
         if pokemon_object:
             #updating user's favorite pokemon
