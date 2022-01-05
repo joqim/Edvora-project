@@ -20,7 +20,8 @@ ACCESS_TOKEN_EXPIRES_MINUTES = 800
 origins = {
     "http://localhost",
     "http://localhost:3000",
-    "https://edvora-project.herokuapp.com"
+    "https://edvora-project.herokuapp.com",
+    "https://edvora-project.herokuapp.com/"
 }
 
 app = FastAPI()
