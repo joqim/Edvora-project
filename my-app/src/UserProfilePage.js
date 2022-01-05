@@ -80,6 +80,8 @@ class UserProfilePage extends Component {
           this.setState({
             ...this.state,
             message: response.data.message
+          }, () => {
+            document.location.href="/user_profile#message"
           })
         }   
       })
@@ -91,6 +93,8 @@ class UserProfilePage extends Component {
         ...this.state,
         message: "Pokemon name cannot be left empty",
         error: true
+      }, () => {
+        document.location.href="/user_profile#message"
       })
     }
   }
@@ -151,7 +155,10 @@ class UserProfilePage extends Component {
                 </Button>
               </Segment>
             </Form>
-            {this.state.message && (<Message floating>{this.state.message}</Message>)}
+              {this.state.message && (
+                <div>
+                  <Message floating id="message">{this.state.message}</Message>
+                </div>)}
           </Grid.Column>
         </Grid>
       </>
