@@ -39,9 +39,8 @@ app.mount("/static/", StaticFiles(directory="my-app/build/static"), name="static
 
 @app.get("/", response_class=FileResponse)
 def read_index(request: Request):
-    path = 'my-app/build/index.html' 
+    path = 'my-app/build/index.html'
     return FileResponse(path)
-    
 
 @app.get("/{catchall:path}", response_class=FileResponse)
 def read_index(request: Request):
