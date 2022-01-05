@@ -25,6 +25,7 @@ class LoginPage extends Component {
   }
 
   handleLogin = () => {
+    console.log('inside handle login')
     if(this.state.email && this.state.password) {
       console.log('sending values to backend - login')
       axios.post('/login',{
@@ -56,6 +57,7 @@ class LoginPage extends Component {
   }
 
   render() {
+    console.log('state in login page', this.state)
     return (
       <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
         <Grid.Column style={{ maxWidth: 450 }}>
