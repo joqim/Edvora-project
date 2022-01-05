@@ -36,10 +36,10 @@ folder = 'my-app/build/'
 
 app.mount("/static/", StaticFiles(directory="my-app/build/static"), name="static")
 
-# @app.get("/", response_class=FileResponse)
-# def read_index(request: Request):
-#     path = 'my-app/build/index.html'
-#     return FileResponse(path)
+@app.get("/", response_class=FileResponse)
+def read_index(request: Request):
+    path = 'my-app/build/index.html'
+    return FileResponse(path)
 
 # @app.get("/{catchall:path}", response_class=FileResponse)
 # def read_index(request: Request):
@@ -58,12 +58,6 @@ app.mount("/static/", StaticFiles(directory="my-app/build/static"), name="static
 #put in env, mongoURI string
 client = MongoClient("mongodb+srv://cs631:edvora1998@cluster0.sug2z.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client.edvora
-# user = {
-#         'name' : 'joqim',
-#         'favourite_pokemon' : 'bulbasaur'
-#     }
-# result=db.users.insert_one(user)
-# print("inserted user into database", result)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def get_password_hash(password):
