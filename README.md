@@ -1,5 +1,5 @@
-# Edvora - Pokemon application
-Simple web application to save your favourite pokemon.
-Built on FastAPI framework and React JS.
+# Poke API
+Saves your favourite pokemon - Built as a 1 hour assessment for [Edvora](https://www.edvora.com/)
 
-Hosted live on Heroku at https://edvora-project.herokuapp.com/
+Developed using Fast API framework and Python.
+Hosted live on Heroku at [PokeAPI](https://edvora-project.herokuapp.com/) 
